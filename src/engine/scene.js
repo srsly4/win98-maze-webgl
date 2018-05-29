@@ -1,53 +1,86 @@
 import * as THREE from 'three';
 import mazegen from './mazegen';
+import mazeGeometry from './mazeGeometry';
 
 export default function() {
   const scene = new THREE.Scene();
 
-  const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-  const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-  const cube = new THREE.Mesh( geometry, material );
-  scene.add( cube );
+  const textureLoader = new THREE.TextureLoader();
+  textureLoader.setPath('textures/');
 
   const width = 20;
   const height = 20;
-  const maze = mazegen(width, height, 0.75, 0.75);
+  const maze = mazegen(width, height, 0.5, 0.5);
   console.table(maze);
 
+  const { floorGeometry, wallGeometry } = mazeGeometry(maze, width, height);
 
-  const relPosX = -1 * (width/2) - 0.5;
-  const floorY = 0;
-  const relPosZ = -1 * (height/2) - 0.5;
-  const floorGeometry = new THREE.Geometry();
-  const floorVertices = [];
-  const floorFaces = [];
+  const ceilingMaterial = new THREE.MeshPhongMaterial({
+    color: 0xbbbbbb,
+    specular: 0x222222,
+    shininess: 5,
+    map: textureLoader.load("Concrete_008_COLOR.jpg"),
+    specularMap: textureLoader.load("Concrete_008_ROUGH.jpg"),
+    normalMap: textureLoader.load("Concrete_008_NRM.jpg"),
+    bumpMap: textureLoader.load("Concrete_008_DISP.jpg"),
+    aoMap: textureLoader.load("Concrete_008_OCC.jpg"),
+    displacementMap: textureLoader.load("Concrete_008_DISP.jpg"),
+  });
+  ceilingMaterial.side = THREE.DoubleSide;
 
-  for (let x = 0; x < width; x++) {
-    for (let y = 0; y < height; y++) {
-      if (maze[x][y] === 0) {
-        floorVertices.push(new THREE.Vector3(relPosX+x, floorY, relPosZ+y));
-        floorVertices.push(new THREE.Vector3(relPosX+x+1, floorY, relPosZ+y));
-        floorVertices.push(new THREE.Vector3(relPosX+x, floorY, relPosZ+y+1));
-        floorVertices.push(new THREE.Vector3(relPosX+x+1, floorY, relPosZ+y+1));
-        const vertNdx = floorVertices.length-4;
-        floorFaces.push(new THREE.Face3(vertNdx, vertNdx+1, vertNdx+2));
-        floorFaces.push(new THREE.Face3(vertNdx+3, vertNdx+2, vertNdx+1));
-      }
-    }
-  }
-
-  floorGeometry.vertices = floorVertices;
-  floorGeometry.faces = floorFaces;
-  const floorMaterial  = new THREE.MeshBasicMaterial( { color: 0xdd1100 } );
+  const floorMaterial  = new THREE.MeshLambertMaterial( { color: 0xdd1100 } );
   floorMaterial.side = THREE.DoubleSide;
 
-  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-  floor.position.y = -1;
+  const floor = new THREE.Mesh(floorGeometry, ceilingMaterial);
+  floor.receiveShadow = true;
   scene.add(floor);
+  // const wallShader = parallaxShader;
+  // const wallUniforms = THREE.UniformsUtils.clone( wallShader.uniforms );
+  // const wallParameters = {
+  //   fragmentShader: wallShader.fragmentShader,
+  //   vertexShader: wallShader.vertexShader,
+  //   uniforms: wallUniforms
+  // };
+  //
+  // const wallMaterial = new THREE.ShaderMaterial( wallParameters );
+  // wallMaterial.map = textureLoader.load( 'Brick_wall_002_COLOR.jpg' );
+  // wallMaterial.bumpMap = textureLoader.load( 'Brick_wall_002_DISP.jpg' );
+  // wallMaterial.map.anisotropy = 4;
+  // wallMaterial.bumpMap.anisotropy = 4;
+  // wallUniforms[ 'map' ].value = wallMaterial.map;
+  // wallUniforms[ 'bumpMap' ].value = wallMaterial.bumpMap;
+
+  const wallMaterial = new THREE.MeshPhongMaterial({
+    color: 0x999999,
+    specular: 0x222222,
+    shininess: 35,
+    map: textureLoader.load("Brick_wall_002_COLOR.jpg"),
+    specularMap: textureLoader.load("Brick_wall_002_SPEC.jpg"),
+    normalMap: textureLoader.load("Brick_wall_002_NORM.jpg"),
+    bumpMap: textureLoader.load("Brick_wall_002_DISP.jpg"),
+    aoMap: textureLoader.load("Brick_wall_002_AO.jpg"),
+    displacementMap: textureLoader.load("Brick_wall_002_DISP.jpg"),
+    normalScale: new THREE.Vector2( 0.8, 0.8 )
+  });
+  // wallMaterial.side = THREE.DoubleSide;
+
+  const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+  wall.castShadow = true;
+  wall.receiveShadow = true;
+  scene.add(wall);
+
+  const ambientLight = new THREE.AmbientLight( 0x202020 );
+  scene.add( ambientLight );
+
+  const light = new THREE.PointLight( 0xddddaa, 0.75, 5 );
+  // light.position.set( 0, 25, 0 );
+  light.position.y = 0.5;
+  light.castShadow = true;
+  scene.add( light );
+  scene.add(new THREE.PointLightHelper(light, 0.5));
 
   scene.onFrame = () => {
-    cube.rotation.x += 0.02;
-    cube.rotation.y += 0.02;
+
   };
   return scene;
 };

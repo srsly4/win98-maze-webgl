@@ -62,25 +62,17 @@ export default function(width, height, complexity, density) {
 
   }
 
+  const xCenter = width / 2;
+  const yCenter = height / 2;
+  Z[xCenter][yCenter] = 0;
+  Z[xCenter][yCenter-1] = 0;
+  Z[xCenter][yCenter+1] = 0;
+  Z[xCenter-1][yCenter] = 0;
+  Z[xCenter-1][yCenter-1] = 0;
+  Z[xCenter-1][yCenter+1] = 0;
+  Z[xCenter+1][yCenter] = 0;
+  Z[xCenter+1][yCenter-1] = 0;
+  Z[xCenter+1][yCenter+1] = 0;
+
   return Z;
 }
-
-/*
- # Make aisles
- for i in range(density):
-   x, y = rand(0, shape[1] // 2) * 2, rand(0, shape[0] // 2) * 2
-   Z[y, x] = 1
- for j in range(complexity):
- neighbours = []
- if x > 1:             neighbours.append((y, x - 2))
- if x < shape[1] - 2:  neighbours.append((y, x + 2))
- if y > 1:             neighbours.append((y - 2, x))
- if y < shape[0] - 2:  neighbours.append((y + 2, x))
- if len(neighbours):
- y_,x_ = neighbours[rand(0, len(neighbours) - 1)]
- if Z[y_, x_] == 0:
- Z[y_, x_] = 1
- Z[y_ + (y - y_) // 2, x_ + (x - x_) // 2] = 1
- x, y = x_, y_
- return Z
- */
