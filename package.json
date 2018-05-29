@@ -6,7 +6,9 @@
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-scripts": "1.1.4",
-    "three": "^0.92.0"
+    "three": "^0.92.0",
+    "three-fly-controls": "^1.1.0",
+    "three-trackballcontrols": "^0.0.7"
   },
   "scripts": {
     "start": "react-scripts start",
