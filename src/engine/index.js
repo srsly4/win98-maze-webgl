@@ -9,10 +9,9 @@ function initialize(element) {
   renderer.shadowMap.enabled = true;
 
   const camera = new THREE.PerspectiveCamera( 75, element.offsetWidth/element.offsetHeight, 0.1, 1000 );
-  camera.position.z = 5;
 
-  const controls = new TrackballControls(camera);
-  const scene = getScene();
+  // const controls = new TrackballControls(camera);
+  const scene = getScene(camera);
 
   const axesHelper = new THREE.AxesHelper(5);
 
@@ -21,8 +20,8 @@ function initialize(element) {
   function animate() {
     requestAnimationFrame( animate );
     const delta = clock.getDelta();
-    scene.onFrame();
-    controls.update(delta);
+    scene.onFrame(delta);
+    // controls.update(delta);
     renderer.render( scene, camera );
   }
   animate();

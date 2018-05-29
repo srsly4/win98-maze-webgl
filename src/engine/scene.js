@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import mazegen from './mazegen';
 import mazeGeometry from './mazeGeometry';
+import mazeCameraSpline from './mazeCameraSpline';
 
-export default function() {
+export default function(camera) {
   const scene = new THREE.Scene();
+  scene.camera = camera;
 
   const textureLoader = new THREE.TextureLoader();
   textureLoader.setPath('textures/');
@@ -69,18 +71,52 @@ export default function() {
   wall.receiveShadow = true;
   scene.add(wall);
 
-  const ambientLight = new THREE.AmbientLight( 0x202020 );
+  const ambientLight = new THREE.AmbientLight( 0x202020, 0.2 );
   scene.add( ambientLight );
 
-  const light = new THREE.PointLight( 0xddddaa, 0.75, 5 );
+  const light = new THREE.PointLight( 0xeedd88, 0.7, 2.5 );
   // light.position.set( 0, 25, 0 );
   light.position.y = 0.5;
   light.castShadow = true;
   scene.add( light );
-  scene.add(new THREE.PointLightHelper(light, 0.5));
 
-  scene.onFrame = () => {
+  camera.position.y = 0.5;
 
+  const cameraSteps = 500;
+  const cameraPath = mazeCameraSpline(maze, width, height, cameraSteps);
+  console.log(cameraPath);
+  const tubeGeometry = new THREE.Geometry(cameraPath);
+  const tubeMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
+  const tube = new THREE.Line(tubeGeometry, tubeMaterial);
+  scene.add(tube);
+
+  const speed = 1;
+
+  const inSecondMovementUpdated = speed / cameraSteps;
+  console.log(inSecondMovementUpdated);
+
+  let pathPercentage = 0.0;
+
+  const cameraLatency = 0.5;
+
+  const normal = new THREE.Vector3();
+  const binormal = new THREE.Vector3();
+
+  scene.onFrame = (delta) => {
+    // camera position
+    pathPercentage += inSecondMovementUpdated*delta;
+    if (pathPercentage >= 1.0) {
+      pathPercentage = 0;
+    }
+    const cameraPos = cameraPath.getPointAt(pathPercentage);
+    camera.position.copy(cameraPos);
+    light.position.copy(cameraPos);
+
+    // rotation
+    const futureCameraPos = cameraPath.getPointAt(pathPercentage+(cameraLatency*inSecondMovementUpdated));
+    camera.matrix.lookAt(cameraPos, futureCameraPos, normal);
+    camera.rotation.setFromRotationMatrix( camera.matrix, camera.rotation.order );
+    // console.log(cameraPath.getTangentAt(pathPercentage));
   };
   return scene;
 };
