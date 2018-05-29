@@ -77,7 +77,7 @@ export default function(maze, width, height) {
         }
 
         // right wall
-        if (x < width-1 && maze[x+1][y]) {
+        if (x < width && maze[x+1][y]) {
           wallVertices.push(new THREE.Vector3(relPosX+x+1, floorY, relPosZ+y));
           wallVertices.push(new THREE.Vector3(relPosX+x+1, floorY, relPosZ+y+1));
           wallVertices.push(new THREE.Vector3(relPosX+x+1, floorY+wallHeight, relPosZ+y+1));
@@ -99,7 +99,7 @@ export default function(maze, width, height) {
         }
 
         // bottom wall
-        if (y < height-1 && maze[x][y+1]) {
+        if (y < height && maze[x][y+1]) {
           wallVertices.push(new THREE.Vector3(relPosX+x+1, floorY, relPosZ+y+1));
           wallVertices.push(new THREE.Vector3(relPosX+x, floorY, relPosZ+y+1));
           wallVertices.push(new THREE.Vector3(relPosX+x, floorY+wallHeight, relPosZ+y+1));

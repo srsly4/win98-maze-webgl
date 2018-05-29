@@ -12,7 +12,7 @@ export default function(camera) {
 
   const width = 20;
   const height = 20;
-  const maze = mazegen(width, height, 0.5, 0.5);
+  const maze = mazegen(width, height, 0.75, 0.75);
   console.table(maze);
 
   const { floorGeometry, wallGeometry } = mazeGeometry(maze, width, height);
@@ -30,12 +30,27 @@ export default function(camera) {
   });
   ceilingMaterial.side = THREE.DoubleSide;
 
-  const floorMaterial  = new THREE.MeshLambertMaterial( { color: 0xdd1100 } );
-  floorMaterial.side = THREE.DoubleSide;
+  // const floorMaterial = new THREE.MeshPhongMaterial({
+  //   color: 0xbbbbbb,
+  //   specular: 0x222222,
+  //   shininess: 5,
+  //   map: textureLoader.load("Flooring_Stone_001_COLOR.png"),
+  //   specularMap: textureLoader.load("Flooring_Stone_001_SPEC.png"),
+  //   normalMap: textureLoader.load("Flooring_Stone_001_NRM.png"),
+  //   bumpMap: textureLoader.load("Flooring_Stone_001_DISP.png"),
+  //   aoMap: textureLoader.load("Flooring_Stone_001_OCC.png"),
+  //   displacementMap: textureLoader.load("Flooring_Stone_001_DISP.png"),
+  // });
+  // floorMaterial.side = THREE.DoubleSide;
 
   const floor = new THREE.Mesh(floorGeometry, ceilingMaterial);
   floor.receiveShadow = true;
   scene.add(floor);
+
+  const ceiling = new THREE.Mesh(floorGeometry, ceilingMaterial);
+  ceiling.receiveShadow = true;
+  ceiling.position.y = 1;
+  scene.add(ceiling);
   // const wallShader = parallaxShader;
   // const wallUniforms = THREE.UniformsUtils.clone( wallShader.uniforms );
   // const wallParameters = {
@@ -55,7 +70,7 @@ export default function(camera) {
   const wallMaterial = new THREE.MeshPhongMaterial({
     color: 0x999999,
     specular: 0x222222,
-    shininess: 35,
+    shininess: 5,
     map: textureLoader.load("Brick_wall_002_COLOR.jpg"),
     specularMap: textureLoader.load("Brick_wall_002_SPEC.jpg"),
     normalMap: textureLoader.load("Brick_wall_002_NORM.jpg"),
@@ -74,7 +89,7 @@ export default function(camera) {
   const ambientLight = new THREE.AmbientLight( 0x202020, 0.2 );
   scene.add( ambientLight );
 
-  const light = new THREE.PointLight( 0xeedd88, 0.7, 2.5 );
+  const light = new THREE.PointLight( 0xeedd88, 0.4, 2.75 );
   // light.position.set( 0, 25, 0 );
   light.position.y = 0.5;
   light.castShadow = true;
@@ -84,15 +99,14 @@ export default function(camera) {
 
   const cameraSteps = 500;
   const cameraPath = mazeCameraSpline(maze, width, height, cameraSteps);
-  console.log(cameraPath);
-  const tubeGeometry = new THREE.Geometry(cameraPath);
-  const tubeMaterial = new THREE.LineBasicMaterial({color: 0xff0000});
-  const tube = new THREE.Line(tubeGeometry, tubeMaterial);
-  scene.add(tube);
+  // const tubeGeometry = new THREE.TubeBufferGeometry(cameraPath, cameraSteps*4, 0.01, 3, false);
+  // const tubeMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+  // const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+  // scene.add(tube);
 
   const speed = 1;
 
-  const inSecondMovementUpdated = speed / cameraSteps;
+  const inSecondMovementUpdated = speed / cameraPath.points.length;
   console.log(inSecondMovementUpdated);
 
   let pathPercentage = 0.0;
@@ -100,7 +114,18 @@ export default function(camera) {
   const cameraLatency = 0.5;
 
   const normal = new THREE.Vector3();
-  const binormal = new THREE.Vector3();
+
+  // const cameraHelper = new THREE.CameraHelper(camera);
+  // scene.add(cameraHelper);
+  //
+  //
+  // const testMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  // const testGeometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
+  // for (const point of cameraPath.points) {
+  //   const boxPoint = new THREE.Mesh(testGeometry, testMaterial);
+  //   boxPoint.position.copy(point);
+  //   scene.add(boxPoint);
+  // }
 
   scene.onFrame = (delta) => {
     // camera position
@@ -117,6 +142,8 @@ export default function(camera) {
     camera.matrix.lookAt(cameraPos, futureCameraPos, normal);
     camera.rotation.setFromRotationMatrix( camera.matrix, camera.rotation.order );
     // console.log(cameraPath.getTangentAt(pathPercentage));
+
+    // cameraHelper.update();
   };
   return scene;
 };

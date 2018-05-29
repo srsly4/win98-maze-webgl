@@ -29,6 +29,7 @@ export default function(maze, width, height, steps) {
   let direction = 1;
   let step = 0;
 
+  const returnStepAway = 0.4;
   const relativeDirectionPriorities = [1, 0, 3, 2];
 
   const absoluteMapFunc = (a) => (direction+a)%4;
@@ -47,11 +48,39 @@ export default function(maze, width, height, steps) {
       }
     }
 
+    // if return, do better animation
     direction = absoluteDirectionPriorities[ndx];
-
     position = mapDirection[direction](position);
-
-    path.push([position[0], position[1]]);
+    if (relativeDirectionPriorities[ndx] === 2) {
+      path.pop();
+      path.pop();
+      switch (direction) {
+        case 0:
+          path.push([position[0]+returnStepAway, position[1]]);
+          // path.push([position[0], position[1]+returnStepAway]);
+          path.push([position[0]-returnStepAway, position[1]]);
+          break;
+        case 1:
+          path.push([position[0], position[1]-returnStepAway]);
+          // path.push([position[0]-returnStepAway, position[1]]);
+          path.push([position[0], position[1]+returnStepAway]);
+          break;
+        case 2:
+          path.push([position[0]-returnStepAway, position[1]]);
+          // path.push([position[0], position[1]-returnStepAway]);
+          path.push([position[0]+returnStepAway, position[1]]);
+          break;
+        case 3:
+          path.push([position[0], position[1]-returnStepAway]);
+          // path.push([position[0]+returnStepAway, position[1]]);
+          path.push([position[0], position[1]+returnStepAway]);
+          break;
+        default:
+          break;
+      }
+    } else {
+      path.push([position[0], position[1]]);
+    }
 
     step += 1;
   }
@@ -62,5 +91,5 @@ export default function(maze, width, height, steps) {
 
   const cameraPath = path.map((pos) => new THREE.Vector3(relPosX + pos[0], cameraY, relPosZ + pos[1]));
 
-  return new THREE.CatmullRomCurve3(cameraPath);
+  return new THREE.CatmullRomCurve3(cameraPath, false, 'chordal');
 }

@@ -10,18 +10,19 @@ function initialize(element) {
 
   const camera = new THREE.PerspectiveCamera( 75, element.offsetWidth/element.offsetHeight, 0.1, 1000 );
 
-  // const controls = new TrackballControls(camera);
+  const controlledCamera = new THREE.PerspectiveCamera(75, element.offsetWidth/element.offsetHeight, 0.1, 1000);
+  controlledCamera.position.y = 0.5;
+  const controls = new TrackballControls(controlledCamera);
   const scene = getScene(camera);
 
-  const axesHelper = new THREE.AxesHelper(5);
-
-  scene.add(axesHelper);
+  // const axesHelper = new THREE.AxesHelper(5);
+  // scene.add(axesHelper);
 
   function animate() {
     requestAnimationFrame( animate );
     const delta = clock.getDelta();
+    controls.update(delta);
     scene.onFrame(delta);
-    // controls.update(delta);
     renderer.render( scene, camera );
   }
   animate();
