@@ -3,12 +3,16 @@ import mazegen from './mazegen';
 import mazeGeometry from './mazeGeometry';
 import mazeCameraSpline from './mazeCameraSpline';
 
+import FBXLoader from 'three-fbx-loader';
+
 export default function(camera) {
   const scene = new THREE.Scene();
   scene.camera = camera;
 
   const textureLoader = new THREE.TextureLoader();
   textureLoader.setPath('textures/');
+
+  const fbxLoader = new FBXLoader();
 
   const width = 20;
   const height = 20;
@@ -20,7 +24,7 @@ export default function(camera) {
   const ceilingMaterial = new THREE.MeshPhongMaterial({
     color: 0xbbbbbb,
     specular: 0x222222,
-    shininess: 5,
+    shininess: 0,
     map: textureLoader.load("Concrete_008_COLOR.jpg"),
     specularMap: textureLoader.load("Concrete_008_ROUGH.jpg"),
     normalMap: textureLoader.load("Concrete_008_NRM.jpg"),
@@ -28,6 +32,7 @@ export default function(camera) {
     aoMap: textureLoader.load("Concrete_008_OCC.jpg"),
     displacementMap: textureLoader.load("Concrete_008_DISP.jpg"),
   });
+
   ceilingMaterial.side = THREE.DoubleSide;
 
   // const floorMaterial = new THREE.MeshPhongMaterial({
@@ -87,9 +92,10 @@ export default function(camera) {
   scene.add(wall);
 
   const ambientLight = new THREE.AmbientLight( 0x202020, 0.2 );
+  // const ambientLight = new THREE.AmbientLight( 0xffffff, 0.8 );
   scene.add( ambientLight );
 
-  const light = new THREE.PointLight( 0xeedd88, 0.4, 3.5 );
+  const light = new THREE.PointLight( 0xeead5e, 0.4, 3.5 );
   // light.position.set( 0, 25, 0 );
   light.position.y = 0.65;
   light.castShadow = true;
@@ -99,33 +105,93 @@ export default function(camera) {
 
   const cameraSteps = 500;
   const cameraPath = mazeCameraSpline(maze, width, height, cameraSteps);
-  // const tubeGeometry = new THREE.TubeBufferGeometry(cameraPath, cameraSteps*4, 0.01, 3, false);
-  // const tubeMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
-  // const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
-  // scene.add(tube);
+  const tubeGeometry = new THREE.TubeGeometry(cameraPath, cameraSteps*4, 0.01, 4, false);
+  const tubeMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+  const tube = new THREE.Mesh(tubeGeometry, tubeMaterial);
+  scene.add(tube);
+  tube.visible = false;
+
+  const testMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+  const testGeometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
+  const testParent = new THREE.Object3D();
+  for (const point of cameraPath.points) {
+    const boxPoint = new THREE.Mesh(testGeometry, testMaterial);
+    boxPoint.position.copy(point);
+    testParent.add(boxPoint);
+  }
+  scene.add(testParent);
+  testParent.visible = false;
+
+
+  let diamonds = { children: [] };
+  fbxLoader.load('models/DiamondGem.FBX', (object3d) => {
+    const diamondGeometry = object3d.children[0].geometry;
+    const diamondMaterial = object3d.children[0].material;
+
+    diamondMaterial.transparent = true;
+    diamondMaterial.opacity = 0.75;
+    diamondMaterial.castShadow = false;
+    diamondMaterial.receiveShadow = false;
+    diamondMaterial.shininess = 80;
+
+    const relPosX = -1 * (width/2);
+    const diamondY = 0.6;
+    const diamondLightY = 0.9;
+    const relPosZ = -1 * (height/2);
+
+    diamonds = new THREE.Object3D();
+    for (let x = 1; x < width-1; x++) {
+      for (let y = 1; y < height-1; y++) {
+        if (maze[x][y] === 0) {
+          let borders = 0;
+          borders += maze[x+1][y];
+          borders += maze[x-1][y];
+          borders += maze[x][y+1];
+          borders += maze[x][y-1];
+
+          if (borders === 3 && Math.random() < 0.4) {
+            const diamond = new THREE.Mesh(diamondGeometry, diamondMaterial);
+            diamond.scale.set(0.03, 0.03, 0.03);
+            diamond.rotation.x = Math.PI/2;
+            diamond.position.x = relPosX + x;
+            diamond.position.y = diamondY;
+            diamond.position.z = relPosZ + y;
+            diamonds.add(diamond);
+
+            const diamondLight = new THREE.PointLight(0x2211ff, 0.3, 1.5);
+            diamondLight.castShadow = false;
+            diamondLight.position.x = relPosX + x;
+            diamondLight.position.y = diamondLightY;
+            diamondLight.position.z = relPosZ + y;
+            // diamonds.add(diamondLight);
+          }
+        }
+      }
+    }
+    scene.add(diamonds);
+
+  });
+
 
   const speed = 1;
 
   const inSecondMovementUpdated = speed / cameraPath.points.length;
 
   let pathPercentage = 0.0;
-
+  console.log(camera.up);
   const cameraLatency = 0.5;
   const torchLatency = 0.3;
 
-  const normal = new THREE.Vector3();
+  scene.setWaypointsVisibility = function(visibility) {
+    testParent.visible = visibility;
+    tube.visible = visibility;
+  };
 
-  // const cameraHelper = new THREE.CameraHelper(camera);
-  // scene.add(cameraHelper);
-  //
-  //
-  // const testMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-  // const testGeometry = new THREE.CubeGeometry(0.1, 0.1, 0.1);
-  // for (const point of cameraPath.points) {
-  //   const boxPoint = new THREE.Mesh(testGeometry, testMaterial);
-  //   boxPoint.position.copy(point);
-  //   scene.add(boxPoint);
-  // }
+  scene.setCeilingVisibility = function(visibility) {
+    ceiling.visible = visibility;
+  };
+
+  const cameraRotationFactor = 1;
 
   scene.onFrame = (delta) => {
     // camera position
@@ -140,11 +206,22 @@ export default function(camera) {
     light.position.copy(lightPos);
 
     // rotation
+    camera.up.x = 0.1*Math.sin(pathPercentage*600);
+    camera.up.z = 0.1*Math.sin(pathPercentage*600 + 1);
     const futureCameraPos = cameraPath.getPointAt(pathPercentage+(cameraLatency*inSecondMovementUpdated));
-    camera.matrix.lookAt(cameraPos, futureCameraPos, normal);
-    camera.rotation.setFromRotationMatrix( camera.matrix, camera.rotation.order );
-    // console.log(cameraPath.getTangentAt(pathPercentage));
+    camera.matrix.lookAt(cameraPos, futureCameraPos, camera.up);
+    camera.rotation.setFromRotationMatrix(camera.matrix, camera.rotation.order);
 
+    // camera.rotation.setFromRotationMatrix( camera.matrix, camera.rotation.order );
+    // camera.rotation.set(
+    //   camera.rotation.x + Math.sin(currTime/1000)*0.05,
+    //   camera.rotation.y + Math.sin(currTime/1000 +1)*0.05,
+    //   camera.rotation.z + Math.sin(currTime/1000 +2)*0.05
+    // );
+
+    for (const diamond of diamonds.children) {
+      diamond.rotation.z += delta * 2;
+    }
     // cameraHelper.update();
   };
   return scene;

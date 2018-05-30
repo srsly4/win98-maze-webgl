@@ -91,5 +91,5 @@ export default function(maze, width, height, steps) {
 
   const cameraPath = path.map((pos) => new THREE.Vector3(relPosX + pos[0], cameraY, relPosZ + pos[1]));
 
-  return new THREE.CatmullRomCurve3(cameraPath, false, 'chordal');
+  return new THREE.CatmullRomCurve3(cameraPath, false, 'catmullrom', 0);
 }

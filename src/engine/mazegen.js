@@ -65,14 +65,14 @@ export default function(width, height, complexity, density) {
   const xCenter = width / 2;
   const yCenter = height / 2;
   Z[xCenter][yCenter] = 0;
-  Z[xCenter][yCenter-1] = 0;
-  Z[xCenter][yCenter+1] = 0;
-  Z[xCenter-1][yCenter] = 0;
-  Z[xCenter-1][yCenter-1] = 0;
-  Z[xCenter-1][yCenter+1] = 0;
+  // Z[xCenter][yCenter-1] = 0;
+  // Z[xCenter][yCenter+1] = 0;
+  // Z[xCenter-1][yCenter] = 0;
+  // Z[xCenter-1][yCenter-1] = 0;
+  // Z[xCenter-1][yCenter+1] = 0;
   Z[xCenter+1][yCenter] = 0;
-  Z[xCenter+1][yCenter-1] = 0;
-  Z[xCenter+1][yCenter+1] = 0;
+  // Z[xCenter+1][yCenter-1] = 0;
+  // Z[xCenter+1][yCenter+1] = 0;
 
   return Z;
 }

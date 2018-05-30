@@ -21,6 +21,8 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <h1 className="App-title">Maze demo</h1>
+          <button onClick={() => engine.toggleCamera()}>Toggle camera</button>
+          <button onClick={() => engine.toggleWaypoints()}>Toggle waypoints</button>
         </header>
         <div className="canvas-container">
           { this.canvas }
