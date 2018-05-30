@@ -23,8 +23,8 @@ export default function(camera) {
 
   const ceilingMaterial = new THREE.MeshPhongMaterial({
     color: 0xbbbbbb,
+    shininess: 0.1,
     specular: 0x222222,
-    shininess: 0,
     map: textureLoader.load("Concrete_008_COLOR.jpg"),
     specularMap: textureLoader.load("Concrete_008_ROUGH.jpg"),
     normalMap: textureLoader.load("Concrete_008_NRM.jpg"),
@@ -33,22 +33,22 @@ export default function(camera) {
     displacementMap: textureLoader.load("Concrete_008_DISP.jpg"),
   });
 
-  ceilingMaterial.side = THREE.DoubleSide;
+  ceilingMaterial.side = THREE.FrontSide;
 
-  // const floorMaterial = new THREE.MeshPhongMaterial({
-  //   color: 0xbbbbbb,
-  //   specular: 0x222222,
-  //   shininess: 5,
-  //   map: textureLoader.load("Flooring_Stone_001_COLOR.png"),
-  //   specularMap: textureLoader.load("Flooring_Stone_001_SPEC.png"),
-  //   normalMap: textureLoader.load("Flooring_Stone_001_NRM.png"),
-  //   bumpMap: textureLoader.load("Flooring_Stone_001_DISP.png"),
-  //   aoMap: textureLoader.load("Flooring_Stone_001_OCC.png"),
-  //   displacementMap: textureLoader.load("Flooring_Stone_001_DISP.png"),
-  // });
-  // floorMaterial.side = THREE.DoubleSide;
+  const floorMaterial = new THREE.MeshStandardMaterial({
+    color: 0x999999,
+    specular: 0x222222,
+    roughness: 0.2,
+    map: textureLoader.load("Cobblestone_001_COLOR.jpg"),
+    roughnessMap: textureLoader.load("Cobblestone_001_ROUGH.jpg"),
+    normalMap: textureLoader.load("Cobblestone_001_NORM.jpg"),
+    bumpMap: textureLoader.load("Cobblestone_001_DISP.jpg"),
+    aoMap: textureLoader.load("Cobblestone_001_OCC.jpg"),
+    displacementMap: textureLoader.load("Cobblestone_001_DISP.jpg"),
+  });
+  floorMaterial.side = THREE.BackSide;
 
-  const floor = new THREE.Mesh(floorGeometry, ceilingMaterial);
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial);
   floor.receiveShadow = true;
   scene.add(floor);
 
@@ -72,17 +72,19 @@ export default function(camera) {
   // wallUniforms[ 'map' ].value = wallMaterial.map;
   // wallUniforms[ 'bumpMap' ].value = wallMaterial.bumpMap;
 
-  const wallMaterial = new THREE.MeshPhongMaterial({
+  const wallMaterial = new THREE.MeshStandardMaterial({
     color: 0x999999,
-    specular: 0x222222,
-    shininess: 5,
+    metalness: 0.0,
+    roughness: 1.0,
+    bumpScale: 2.0,
+    normalScale: new THREE.Vector2(1, 1),
     map: textureLoader.load("Brick_wall_002_COLOR.jpg"),
-    specularMap: textureLoader.load("Brick_wall_002_SPEC.jpg"),
+    // roughnessMap: textureLoader.load("Brick_wall_002_SPEC.jpg"),
+    metalnessMap: textureLoader.load("Brick_wall_002_SPEC.jpg"),
     normalMap: textureLoader.load("Brick_wall_002_NORM.jpg"),
     bumpMap: textureLoader.load("Brick_wall_002_DISP.jpg"),
     aoMap: textureLoader.load("Brick_wall_002_AO.jpg"),
     displacementMap: textureLoader.load("Brick_wall_002_DISP.jpg"),
-    normalScale: new THREE.Vector2( 0.8, 0.8 )
   });
   // wallMaterial.side = THREE.DoubleSide;
 
@@ -158,12 +160,12 @@ export default function(camera) {
             diamond.position.z = relPosZ + y;
             diamonds.add(diamond);
 
-            const diamondLight = new THREE.PointLight(0x2211ff, 0.3, 1.5);
+            const diamondLight = new THREE.PointLight(0x2211ff, 0.6, 1.5);
             diamondLight.castShadow = false;
             diamondLight.position.x = relPosX + x;
             diamondLight.position.y = diamondLightY;
             diamondLight.position.z = relPosZ + y;
-            // diamonds.add(diamondLight);
+            diamonds.add(diamondLight);
           }
         }
       }
@@ -173,7 +175,7 @@ export default function(camera) {
   });
 
 
-  const speed = 1;
+  const speed = 0.75;
 
   const inSecondMovementUpdated = speed / cameraPath.points.length;
 
@@ -191,7 +193,6 @@ export default function(camera) {
     ceiling.visible = visibility;
   };
 
-  const cameraRotationFactor = 1;
 
   scene.onFrame = (delta) => {
     // camera position
@@ -204,10 +205,13 @@ export default function(camera) {
 
     const lightPos = cameraPath.getPointAt(Math.max(0.0, pathPercentage-(torchLatency*inSecondMovementUpdated)));
     light.position.copy(lightPos);
+    light.position.x += 0.2*Math.sin(pathPercentage*400);
+    light.position.y += 0.05*Math.sin(pathPercentage*430);
+    light.position.z += 0.2*Math.sin(pathPercentage*450);
 
     // rotation
     camera.up.x = 0.1*Math.sin(pathPercentage*600);
-    camera.up.z = 0.1*Math.sin(pathPercentage*600 + 1);
+    camera.up.z = 0.1*Math.sin(pathPercentage*500 + 1);
     const futureCameraPos = cameraPath.getPointAt(pathPercentage+(cameraLatency*inSecondMovementUpdated));
     camera.matrix.lookAt(cameraPos, futureCameraPos, camera.up);
     camera.rotation.setFromRotationMatrix(camera.matrix, camera.rotation.order);

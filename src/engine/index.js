@@ -6,6 +6,8 @@ let isFreeCamera = false;
 let currentCamera = null;
 let camera, controlledCamera;
 let scene;
+let domElement;
+let renderer;
 
 let areWaypointsVisible = false;
 
@@ -24,8 +26,9 @@ function toggleWaypoints() {
 }
 
 function initialize(element) {
+  domElement = element;
   const clock = new THREE.Clock();
-  const renderer = new THREE.WebGLRenderer({ canvas: element });
+  renderer = new THREE.WebGLRenderer({ canvas: element });
   renderer.setSize( element.offsetWidth, element.offsetHeight );
   renderer.shadowMap.enabled = true;
 
@@ -50,8 +53,19 @@ function initialize(element) {
 
 }
 
+function onWindowResize() {
+  // fixme: resizing renderer cause crash
+  // if (!renderer) {
+  //   return;
+  // }
+  // currentCamera.aspect = domElement.innerWidth / domElement.innerHeight;
+  // currentCamera.updateProjectionMatrix();
+  // renderer.setSize( window.domElement, domElement.innerHeight );
+}
+
 export default {
   initialize,
   toggleCamera,
   toggleWaypoints,
+  onWindowResize,
 }

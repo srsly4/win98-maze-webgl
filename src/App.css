@@ -40,3 +40,7 @@
   height: 100%;
 }
 
+strong {
+  display: inline-block;
+  margin-right: 16px;
+}
