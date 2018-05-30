@@ -29,7 +29,7 @@ export default function(maze, width, height, steps) {
   let direction = 1;
   let step = 0;
 
-  const returnStepAway = 0.4;
+  const returnStepAway = 0.25;
   const relativeDirectionPriorities = [1, 0, 3, 2];
 
   const absoluteMapFunc = (a) => (direction+a)%4;

@@ -89,9 +89,9 @@ export default function(camera) {
   const ambientLight = new THREE.AmbientLight( 0x202020, 0.2 );
   scene.add( ambientLight );
 
-  const light = new THREE.PointLight( 0xeedd88, 0.4, 2.75 );
+  const light = new THREE.PointLight( 0xeedd88, 0.4, 3.5 );
   // light.position.set( 0, 25, 0 );
-  light.position.y = 0.5;
+  light.position.y = 0.65;
   light.castShadow = true;
   scene.add( light );
 
@@ -107,11 +107,11 @@ export default function(camera) {
   const speed = 1;
 
   const inSecondMovementUpdated = speed / cameraPath.points.length;
-  console.log(inSecondMovementUpdated);
 
   let pathPercentage = 0.0;
 
   const cameraLatency = 0.5;
+  const torchLatency = 0.3;
 
   const normal = new THREE.Vector3();
 
@@ -135,7 +135,9 @@ export default function(camera) {
     }
     const cameraPos = cameraPath.getPointAt(pathPercentage);
     camera.position.copy(cameraPos);
-    light.position.copy(cameraPos);
+
+    const lightPos = cameraPath.getPointAt(Math.max(0.0, pathPercentage-(torchLatency*inSecondMovementUpdated)));
+    light.position.copy(lightPos);
 
     // rotation
     const futureCameraPos = cameraPath.getPointAt(pathPercentage+(cameraLatency*inSecondMovementUpdated));
