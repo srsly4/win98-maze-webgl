@@ -93,11 +93,11 @@ export default function(camera) {
   wall.receiveShadow = true;
   scene.add(wall);
 
-  const ambientLight = new THREE.AmbientLight( 0x202020, 0.2 );
+  const ambientLight = new THREE.AmbientLight( 0x303030, 0.25 );
   // const ambientLight = new THREE.AmbientLight( 0xffffff, 0.8 );
   scene.add( ambientLight );
 
-  const light = new THREE.PointLight( 0xeead5e, 0.4, 3.5 );
+  const light = new THREE.PointLight( 0xeead5e, 0.8, 4.5 );
   // light.position.set( 0, 25, 0 );
   light.position.y = 0.65;
   light.castShadow = true;
